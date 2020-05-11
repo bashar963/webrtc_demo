@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Created by Bashar Alkaddah on 2020.
+  ~ Copyright (c) $year, Apptech Ltd. All rights reserved.
+  ~ balkaddah@apptech.com.tr
+  -->
+
+<resources>
+    <array name="preloaded_fonts" translatable="false">
+        <item>@font/poppins_bold</item>
+        <item>@font/poppins_medium</item>
+        <item>@font/poppins_semibold</item>
+    </array>
+</resources>
