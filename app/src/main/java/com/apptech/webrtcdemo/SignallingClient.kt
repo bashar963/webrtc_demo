@@ -10,7 +10,6 @@ import android.annotation.SuppressLint
 import android.util.Log
 import io.socket.client.IO
 import io.socket.client.Socket
-import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import org.webrtc.IceCandidate
@@ -66,6 +65,7 @@ internal class SignallingClient {
         var isChannelReady = false
         var isInitiator = false
         var isStarted = false
+        var screenshare = false
         private var callback: SignalingInterface? = null
         private var callback2: SignalingRoomsInterface? = null
 
@@ -85,14 +85,13 @@ internal class SignallingClient {
             }
         })
 
-        fun initRooms(signalingInterface: SignalingRoomsInterface,roomName:String = "public"){
+        fun initRooms(signalingInterface: SignalingRoomsInterface){
             this.callback2 = signalingInterface
             try {
                 val sslcontext = SSLContext.getInstance("TLS")
                 sslcontext.init(null, trustAllCerts, null)
                 //set the socket.io url here
                 socket = IO.socket("http://18.157.69.48:1794")
-                this.roomName = roomName
                 Log.d("SignallingClient", "init() called")
                 socket?.on(Socket.EVENT_CONNECT){
                     getRooms()
@@ -139,11 +138,10 @@ internal class SignallingClient {
                 e.printStackTrace()
             }
         }
-        fun init(signalingInterface: SignalingInterface,roomName:String = "public") {
+
+        fun init(signalingInterface: SignalingInterface) {
             this.callback = signalingInterface
             try {
-
-
                 //room created event.
                 if (isInitiator){
                     callback?.onCreatedRoom()
@@ -224,8 +222,10 @@ internal class SignallingClient {
             Log.d("SignallingClient", "emitInitStatement() called with: event = [create or join], message = [$message]")
             socket!!.emit("create or join", message)
         }
-        fun creteOrJoinRoom(){
-            emitInitStatement(roomName!!)
+        fun creteOrJoinRoom(roomName: String, screenshare:Boolean = false){
+            this.roomName = roomName
+            this.screenshare = screenshare
+            emitInitStatement(roomName)
         }
         fun emitMessage(message: String) {
             Log.d("SignallingClient", "emitMessage() called with: message = [$message]")
@@ -245,7 +245,6 @@ internal class SignallingClient {
                 obj.put("room", roomName)
                 Log.d("emitMessage", obj.toString())
                 socket!!.emit("message", obj)
-                Log.d("vivek1794", obj.toString())
             } catch (e: JSONException) {
                 e.printStackTrace()
             }

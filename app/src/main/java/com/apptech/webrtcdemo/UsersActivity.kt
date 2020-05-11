@@ -6,12 +6,15 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.afollestad.materialdialogs.MaterialDialog
+import com.afollestad.materialdialogs.customview.customView
+import com.afollestad.materialdialogs.customview.getCustomView
 import kotlinx.android.synthetic.main.activity_users.*
+import kotlinx.android.synthetic.main.create_room_dialog.view.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.launch
-import org.json.JSONArray
 import org.json.JSONObject
 import java.util.*
 
@@ -33,18 +36,30 @@ class UsersActivity : AppCompatActivity(),SignallingClient.SignalingRoomsInterfa
             layoutManager = viewLayoutManager
             setHasFixedSize(true)
         }
-        //SignallingClient.initRooms(this,"test1")
         create_room.setOnClickListener {
-            SignallingClient.creteOrJoinRoom()
+            MaterialDialog(this).show {
+                customView(R.layout.create_room_dialog)
+                positiveButton {
+                    val ed_room = getCustomView().ed_room
+                    val shareScreen = getCustomView().checkBox_shareScreen
+                    if (ed_room.editText!!.text.toString().isEmpty() || ed_room.editText!!.text.toString().isBlank()){
+                        ed_room.error = "Please type a room name"
+                        return@positiveButton
+                    }
+                    val roomName = ed_room.editText!!.text.toString()
+                    SignallingClient.creteOrJoinRoom(roomName,shareScreen.isChecked)
+                    it.dismiss()
+                }
+                negativeButton {
+                    it.dismiss()
+                }
+            }
         }
     }
 
     override fun onResume() {
         super.onResume()
-        SignallingClient.initRooms(this,"test1")
-    }
-    companion object{
-        private var TAG: String = "appTech.WebRTC.UsersActivity"
+        SignallingClient.initRooms(this)
     }
 
     override fun onRoomsReceived(data: JSONObject) {
@@ -62,17 +77,11 @@ class UsersActivity : AppCompatActivity(),SignallingClient.SignalingRoomsInterfa
 
     override fun onCreatedRoom() {
         val intent = Intent(this,MainActivity::class.java)
-        //intent.putExtra("to")
-        intent.putExtra("me",me)
-        intent.putExtra("screen_share",false)
         startActivity(intent)
     }
 
     override fun onJoinedRoom() {
         val intent = Intent(this,MainActivity::class.java)
-        //intent.putExtra("to")
-        intent.putExtra("me",me)
-        intent.putExtra("screen_share",false)
         startActivity(intent)
     }
 

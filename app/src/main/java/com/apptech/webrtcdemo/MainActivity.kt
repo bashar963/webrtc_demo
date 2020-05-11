@@ -76,8 +76,6 @@ class MainActivity : AppCompatActivity(),SignallingClient.SignalingInterface {
     private var gotUserMedia: Boolean = false
     private lateinit var audioManager:AudioManager
     private var peerIceServers: MutableList<PeerConnection.IceServer> = mutableListOf()
-    private lateinit var me: String
-    private lateinit var other:String
     private var btnsShown = true
     private var isScreenSharing = false
     private var speakerOn = true
@@ -90,12 +88,8 @@ class MainActivity : AppCompatActivity(),SignallingClient.SignalingInterface {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        if (intent.hasExtra("to"))
-            other = intent.getStringExtra("to")!!
-        if (intent.hasExtra("me"))
-            me = intent.getStringExtra("me")!!
-        if (intent.hasExtra("screen_share"))
-            isScreenSharing = intent.getBooleanExtra("screen_share",false)
+
+        isScreenSharing = SignallingClient.screenshare
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED
             || ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
@@ -608,7 +602,7 @@ class MainActivity : AppCompatActivity(),SignallingClient.SignalingInterface {
         if (SignallingClient.isInitiator) {
             onTryToStart()
         }
-
+        SignallingClient.init(this)
     }
 
     private fun switchCamera(){

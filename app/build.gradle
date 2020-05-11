@@ -58,4 +58,7 @@ dependencies {
     // DraggableView
     implementation 'com.github.hyuwah:DraggableView:0.4.1'
     implementation 'com.google.android.material:material:1.1.0'
+
+    // material dialog
+    implementation 'com.afollestad.material-dialogs:core:3.3.0'
 }

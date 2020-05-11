@@ -29,24 +29,10 @@ class UsersAdapter(private val context:Context,private val list: List<User>,priv
             else
                 username.text= user.username
             call.setOnClickListener {
-//                if (user.username != me){
-//                    val intent = Intent(context,MainActivity::class.java)
-//                    intent.putExtra("to",user.username)
-//                    intent.putExtra("me",me)
-//                    intent.putExtra("screen_share",false)
-//                    context.startActivity(intent)
-//                }
-                SignallingClient.creteOrJoinRoom()
+                SignallingClient.creteOrJoinRoom(user.username)
             }
             btn_screen_share.setOnClickListener {
-//                if (user.username != me){
-//                    val intent = Intent(context,MainActivity::class.java)
-//                    intent.putExtra("to",user.username)
-//                    intent.putExtra("me",me)
-//                    intent.putExtra("screen_share",true)
-//                    context.startActivity(intent)
-//                }
-                SignallingClient.creteOrJoinRoom()
+                SignallingClient.creteOrJoinRoom(user.username,screenshare = true)
             }
         }
     }
