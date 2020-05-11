@@ -9,6 +9,7 @@ import android.content.pm.PackageManager
 import android.media.AudioManager
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
+import android.os.Build
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.Log
@@ -90,22 +91,40 @@ class MainActivity : AppCompatActivity(),SignallingClient.SignalingInterface {
         setContentView(R.layout.activity_main)
 
         isScreenSharing = SignallingClient.screenshare
-
+        if (isScreenSharing && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+            val intent = Intent(this,MediaProjectionService::class.java)
+            intent.action = MediaProjectionService.ACTION_START_FOREGROUND_SERVICE
+            startForegroundService(intent)
+        }
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED
+            ||ContextCompat.checkSelfPermission(this, Manifest.permission.FOREGROUND_SERVICE) != PackageManager.PERMISSION_GRANTED
             || ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(
-                    Manifest.permission.CAMERA,
-                    Manifest.permission.RECORD_AUDIO
-                ),
-                ALL_PERMISSIONS_CODE
-            )
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(
+                        Manifest.permission.CAMERA,
+                        Manifest.permission.RECORD_AUDIO,
+                        Manifest.permission.FOREGROUND_SERVICE
+                    ),
+                    ALL_PERMISSIONS_CODE
+                )
+            }else{
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(
+                        Manifest.permission.CAMERA,
+                        Manifest.permission.RECORD_AUDIO
+                    ),
+                    ALL_PERMISSIONS_CODE
+                )
+            }
         } else {
             // all permissions already granted
             start()
         }
     }
+
     private fun initViews() {
         localVideoView = findViewById(R.id.localView)
         remoteVideoView = findViewById(R.id.remoteView)
@@ -140,7 +159,11 @@ class MainActivity : AppCompatActivity(),SignallingClient.SignalingInterface {
                 btnsShown = true
                 endCall.show()
                 mute.show()
-                switch_camera.show()
+                if (isScreenSharing){
+                    switch_camera.visibility = View.GONE
+                }else{
+                    switch_camera.show()
+                }
                 sound_output.show()
             }
 
@@ -173,13 +196,17 @@ class MainActivity : AppCompatActivity(),SignallingClient.SignalingInterface {
                     btnsShown = true
                     endCall.show()
                     mute.show()
-                    switch_camera.show()
+                    if (isScreenSharing){
+                        switch_camera.visibility = View.GONE
+                    }else{
+                        switch_camera.show()
+                    }
                     sound_output.show()
                 }
             }
             val params = FrameLayout.LayoutParams(
-                dpToPx(130),
-                dpToPx(160)
+                dpToPx(140),
+                dpToPx(180)
             ).apply {
                 this.setMargins(dpToPx(16))
                 gravity =  Gravity.START or Gravity.TOP
@@ -215,6 +242,7 @@ class MainActivity : AppCompatActivity(),SignallingClient.SignalingInterface {
 
     }
 
+
     private fun start() {
         // keep screen on
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -227,6 +255,7 @@ class MainActivity : AppCompatActivity(),SignallingClient.SignalingInterface {
 
         //Now create a VideoCapturer instance.
         if (isScreenSharing){
+
             val  mediaProjectionManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
             val intent = mediaProjectionManager.createScreenCaptureIntent()
             if (intent == null){
@@ -530,6 +559,12 @@ class MainActivity : AppCompatActivity(),SignallingClient.SignalingInterface {
     override fun onDestroy() {
         myCoroutineScope.cancel()
         SignallingClient.close()
+        if (isScreenSharing && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+            val intent = Intent(this,MediaProjectionService::class.java)
+            intent.action = MediaProjectionService.ACTION_STOP_FOREGROUND_SERVICE
+            //startService(intent)
+            startForegroundService(intent)
+        }
         super.onDestroy()
         audioManager.mode = AudioManager.MODE_NORMAL
         videoCapturerAndroid?.dispose()

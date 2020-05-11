@@ -4,7 +4,7 @@ package com.apptech.webrtcdemo
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
+import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.customview.customView
@@ -86,6 +86,6 @@ class UsersActivity : AppCompatActivity(),SignallingClient.SignalingRoomsInterfa
     }
 
     override fun onRoomFull() {
-        Log.e("fullRoom","full")
+        Toast.makeText(this,"room is full",Toast.LENGTH_LONG).show()
     }
 }
